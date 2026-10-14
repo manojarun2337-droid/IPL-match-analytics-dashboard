@@ -1,336 +1,215 @@
-\# 🏏 IPL Match Analytics Dashboard
+# 🏏 IPL Match Analytics Dashboard
+### Exploring Team Performance, Toss Strategy, Match Conditions & Dew Likelihood
 
+An end-to-end sports analytics project using **Power BI, Python, DAX, and historical weather data** to explore IPL match outcomes, team performance, toss decisions, and the relationship between match conditions and chasing strategies.
 
+---
 
-\### Exploring Team Performance, Toss Strategy, Match Conditions \& Dew Likelihood
+## 📌 Project Overview
 
+Cricket matches are influenced by several factors, including team performance, venue conditions, toss decisions, match timing, and weather. However, the impact of these factors is not always straightforward.
 
+This project analyzes historical Indian Premier League (IPL) matches through an interactive Power BI dashboard. It combines historical match data with fixture timing and weather information to investigate patterns in match outcomes and toss strategy.
 
-An end-to-end sports analytics project using \*\*Power BI, Python, DAX, and historical weather data\*\* to explore IPL match outcomes, team performance, toss decisions, and weather-related match conditions.
+The project has two analytical components:
 
+- **Historical IPL Analysis:** Examines team performance, match outcomes, and toss-related patterns across multiple IPL seasons.
+- **Match Conditions Analysis:** Investigates the association between match timing, weather-based dew likelihood, chasing outcomes, and decisions made after winning the toss.
 
+The objective is to turn historical cricket data into meaningful, data-driven insights that can support further sports analytics research.
 
-\## 📌 Project Overview
+## 🎯 Problem Statement
 
+**How are IPL match outcomes and toss strategies associated with team performance, match timing, and weather-related conditions?**
 
+The project investigates whether historical match data reveals meaningful differences in observed outcomes across these factors, rather than assuming that winning the toss automatically provides a competitive advantage.
 
-Cricket match outcomes can be influenced by team strength, venue conditions, toss decisions, match timing, and weather. This project uses historical Indian Premier League (IPL) data to investigate patterns in match outcomes and toss strategy through an interactive Power BI dashboard.
+## 🛠️ Technology Stack
 
+| Technology | Purpose |
+|---|---|
+| Power BI | Interactive dashboard development and data visualization |
+| Python | Data preparation, fixture enrichment, and weather-data processing |
+| DAX | Calculated measures and analytical metrics |
+| CSV | Structured storage and exchange of match and enriched data |
+| Open-Meteo Historical Weather API | Historical hourly weather data for match-condition analysis |
+| Git & GitHub | Version control and project documentation |
 
+## 📊 Dataset & Data Preparation
 
-The project combines historical match analysis with a separate weather-enriched dataset covering the 2016–2026 seasons.
+The project uses historical IPL match data obtained from [Cricsheet](https://cricsheet.org/).
 
-
-
-\### 🎯 Problem Statement
-
-
-
-\*\*How are IPL match outcomes and toss strategies associated with team performance, match timing, and weather-related conditions?\*\*
-
-
-
-The objective is to identify meaningful patterns in historical match data and investigate whether chasing outcomes and toss decisions vary across different match conditions.
-
-
-
-\## 🛠️ Technology Stack
-
-
-
-\- \*\*Power BI:\*\* Interactive dashboards and data visualization
-
-\- \*\*Python:\*\* Data cleaning, fixture enrichment, and weather-data processing
-
-\- \*\*Pandas \& NumPy:\*\* Data manipulation and feature engineering
-
-\- \*\*DAX:\*\* Calculated measures and analytical metrics
-
-\- \*\*Open-Meteo Historical Weather API:\*\* Historical weather observations
-
-\- \*\*Git \& GitHub:\*\* Version control and project documentation
-
-
-
-\## 📊 Dataset \& Preparation
-
-
-
-Historical IPL match data was obtained from \[Cricsheet](https://cricsheet.org/).
-
-
-
-The original historical dataset contains \*\*1,243 matches across 19 seasons\*\*. The data was cleaned and standardized before being used for analysis.
-
-
+The original historical dataset contains **1,243 matches** across 19 seasons. The match data was cleaned and standardized before being used for dashboard development.
 
 Key preparation steps included:
 
+- Standardizing team names across historical seasons.
+- Cleaning and validating match outcomes, toss decisions, venues, and other match-level fields.
+- Preparing a separate enriched dataset for the match-conditions analysis.
+- Matching fixtures with scheduled match dates and start times.
+- Enriching the fixture data with historical hourly weather observations.
 
+### Match-Conditions Dataset
 
-\- Standardizing team names across historical seasons.
+The enriched dataset covers the **2016–2026 IPL seasons** and contains **726 matched fixtures**.
 
-\- Validating match outcomes, toss decisions, and venue information.
-
-\- Enriching fixture data with scheduled match dates and start times.
-
-\- Matching historical hourly weather observations to match fixtures.
-
-\- Engineering weather-based indicators for dew-likelihood analysis.
-
-
-
-\### Weather-Enriched Dataset
-
-
-
-The separate match-conditions dataset covers the \*\*2016–2026 IPL seasons\*\*.
-
-
-
-| Metric | Value |
-
+| Dataset characteristic | Value |
 |---|---:|
-
+| Seasons covered | 2016–2026 |
 | Matched fixtures | 726 |
-
-| Weather records matched | 687 |
-
+| Weather records successfully matched | 687 |
 | Weather coverage | 94.63% |
+| Matches with missing weather data | 39 |
 
-| Missing weather records | 39 |
+The weather-enriched dataset is analyzed separately from the full historical dataset to preserve the intended scope of each dashboard section.
 
+## 🌦️ Weather Enrichment & Dew-Likelihood Methodology
 
+One of the main extensions of this project is the enrichment of IPL fixtures with historical weather observations.
 
-\## 🌦️ Dew-Likelihood Methodology
+Scheduled fixture information was used to identify match dates and approximate start times. Historical hourly weather data was then retrieved from Open-Meteo and matched to the relevant fixtures.
 
+Weather variables included:
 
+- Temperature
+- Relative humidity
+- Dew point
+- Dew-point depression
 
-Actual dew accumulation on the pitch was not directly measured. Therefore, this project uses a \*\*weather-based dew-likelihood proxy\*\* derived from relative humidity and dew-point depression.
+### Dew-Likelihood Proxy
 
-
+Actual dew accumulation on the pitch was not directly measured. Therefore, the project uses a **weather-based dew-likelihood proxy** to classify match conditions.
 
 Dew-point depression is calculated as:
 
-
-
 `Dew-point depression = Temperature − Dew point`
 
-
+A lower dew-point depression generally indicates that the air temperature is closer to the dew point. Relative humidity is also considered when estimating the likelihood of dew-favourable conditions.
 
 The proxy score combines normalized humidity and dew-point-depression components:
 
-
-
 `DewProxyScore = 100 × (0.60 × H + 0.40 × Dₛ)`
 
+Where:
 
-
-Where `H` represents the normalized humidity component and `Dₛ` represents the normalized dew-point-depression component.
-
-
+- `H` is the normalized humidity component, based on relative humidity.
+- `Dₛ` is the normalized dew-point-depression component.
+- Both components are clipped to the range 0–1.
 
 The classification rules are:
 
+- **High:** Relative humidity ≥ 80% and dew-point depression ≤ 4°C.
+- **Medium:** Relative humidity ≥ 70% and dew-point depression ≤ 6°C, provided the High criteria are not met.
+- **Low:** Conditions that do not satisfy the Medium or High criteria.
 
+These categories represent estimated weather conditions, not direct observations of dew on the cricket ground.
 
-\- \*\*High:\*\* Relative humidity ≥ 80% and dew-point depression ≤ 4°C.
+## 📈 Power BI Dashboard
 
-\- \*\*Medium:\*\* Relative humidity ≥ 70% and dew-point depression ≤ 6°C, provided the High criteria are not met.
+The report is organized into four analytical pages.
 
-\- \*\*Low:\*\* Conditions that do not satisfy the Medium or High criteria.
+### 1. How IPL Strategy Has Evolved
 
+Explores historical trends across IPL seasons and examines how match outcomes and strategic patterns have changed over time.
 
+### 2. Who Actually Wins — And Why
 
-These categories estimate weather conditions favourable to dew formation; they do not confirm that dew was present on the pitch.
+Examines match outcomes and toss-related patterns to explore whether winning the toss consistently translates into winning the match.
 
+### 3. Team Analysis
 
+Compares teams across match outcomes and performance indicators to identify differences in historical performance.
 
-\## 📈 Power BI Dashboard
+### 4. How Match Conditions Shape Toss Strategy
 
+Focuses on the 2016–2026 enriched dataset and investigates:
 
+- Differences in weather-based dew likelihood between day and night matches.
+- Observed win rates when batting first versus chasing.
+- Toss-winner success after choosing to field, across dew categories.
+- Toss-winner success after choosing to bat versus field.
+- Differences in toss decisions between day and night matches.
 
-The report contains four analytical pages.
+The report uses interactive visuals and comparisons to make these patterns easier to explore.
 
+## 🔍 Key Findings
 
+The enriched dataset reveals several descriptive patterns worth investigating.
 
-\### 1. How IPL Strategy Has Evolved
+- **Match timing and weather:** Night matches had a higher average dew-proxy score than day matches in the enriched dataset.
+- **Chasing outcomes:** Observed win rates differed across batting-first and chasing scenarios, with the size of the difference varying by dew category.
+- **Toss strategy:** Toss-winner success after choosing to field varied across the Low, Medium, and High dew-likelihood categories.
+- **Day versus night decisions:** Choosing to field was more common among toss winners in night matches than in day matches.
+- **Toss advantage is not universal:** The observed relationship between winning the toss and winning the match depends on the subset of matches and the conditions being analyzed.
 
-Explores historical patterns across IPL seasons and examines changes in match outcomes and strategy.
+These findings describe associations in the available data. They do not establish that dew or toss decisions directly cause a particular match outcome.
 
+## 🧠 Analytical Approach
 
+The project follows a structured analytics workflow:
 
-\### 2. Who Actually Wins — And Why
+1. **Data collection:** Obtain historical IPL match data and fixture information.
+2. **Data cleaning:** Standardize team names and validate match-level fields.
+3. **Fixture enrichment:** Match historical fixtures with scheduled dates and start times.
+4. **Weather enrichment:** Retrieve and match historical weather observations.
+5. **Feature engineering:** Calculate dew-point depression, a dew-proxy score, and dew-likelihood categories.
+6. **Dashboard development:** Create calculated measures and interactive Power BI visuals using DAX.
+7. **Exploratory analysis:** Compare outcomes across teams, seasons, match timing, toss decisions, and dew-likelihood categories.
+8. **Interpretation:** Evaluate the observed patterns while considering missing data and the limitations of proxy variables.
 
-Investigates match outcomes and toss-related patterns to explore whether winning the toss consistently translates into winning the match.
+## ⚠️ Limitations
 
+- Weather observations are matched using fixture timing and historical hourly data; they are not direct measurements from the pitch.
+- Dew likelihood is an estimated proxy, not a confirmed record of dew accumulation.
+- Weather data is unavailable for 39 of the 726 enriched fixtures.
+- Historical patterns do not establish causation.
+- Team composition, player availability, venue characteristics, match format, innings progression, and other variables may also influence match outcomes.
+- The enriched analysis covers 2016–2026, while the broader historical analysis covers 19 IPL seasons. Results from these two scopes should not be compared without accounting for their different coverage.
 
-
-\### 3. Team Analysis
-
-Compares historical team performance and match outcomes across the IPL.
-
-
-
-\### 4. How Match Conditions Shape Toss Strategy
-
-Uses the weather-enriched 2016–2026 dataset to investigate:
-
-
-
-\- Dew-likelihood differences between day and night matches.
-
-\- Observed win rates when batting first versus chasing.
-
-\- Toss-winner success after choosing to field across dew categories.
-
-\- Toss-winner success after choosing to bat versus field.
-
-\- Differences in toss decisions between day and night matches.
-
-
-
-\## 🔍 Key Findings
-
-
-
-The analysis identifies several descriptive patterns:
-
-
-
-\- \*\*Match timing:\*\* Night matches had a higher average dew-proxy score than day matches in the enriched dataset.
-
-\- \*\*Chasing outcomes:\*\* Observed win rates differed across dew categories and innings strategies.
-
-\- \*\*Toss strategy:\*\* Toss-winner success after choosing to field varied across the Low, Medium, and High dew-likelihood categories.
-
-\- \*\*Day versus night:\*\* Toss winners chose to field more frequently in night matches than in day matches.
-
-\- \*\*Context matters:\*\* Winning the toss alone does not consistently explain match outcomes across every subset of matches.
-
-
-
-These findings describe associations in historical data and do not establish that dew or toss decisions directly cause a particular result.
-
-
-
-\## 🔄 Project Workflow
-
-
-
-1\. Collect historical IPL match data.
-
-2\. Clean and standardize team names and match-level fields.
-
-3\. Enrich fixtures with scheduled dates and start times.
-
-4\. Retrieve and match historical weather observations.
-
-5\. Engineer dew-likelihood indicators.
-
-6\. Create DAX measures and interactive Power BI visuals.
-
-7\. Compare observed outcomes across teams, seasons, toss decisions, and match conditions.
-
-8\. Interpret findings while accounting for missing data and methodological limitations.
-
-
-
-\## 📂 Repository Structure
-
-
+## 📂 Repository Structure
 
 ```text
-
 ipl-match-analytics-dashboard/
-
+│
 ├── README.md
-
 ├── dashboard/
-
-│   ├── IPL\_Dashboard.pbix
-
-│   └── IPL\_Dashboard.pdf
-
-├── notebooks/
-
-│   └── ipl\_weather\_enrichment\_portable.ipynb
-
-├── data/
-
-└── scripts/
-
+│   ├── IPL_Dashboard.pbix
+│   └── IPL_Dashboard.pdf
+│
+├── scripts/
+│   ├── fixture_enrichment.py
+│   └── weather_enrichment.py
+│
+└── data/
+    └── README.md
 ```
 
+*This is the intended structure. Keep only the files and folders that are actually present in the repository, and update filenames to match your project.*
 
+The PDF provides a convenient way to view the report pages without Power BI Desktop. The `.pbix` file, if included, allows users with Power BI Desktop to explore the report interactively.
 
-The PDF provides a convenient way to view the dashboard pages. The Power BI file can be opened in Power BI Desktop for interactive exploration.
+## 🚀 How to Explore the Project
 
+1. Open `dashboard/IPL_Dashboard.pdf` to view the report pages.
+2. If the `.pbix` file is included, download it and open it in Power BI Desktop for interactive exploration.
+3. Review the `scripts/` directory for the data-enrichment workflow, if the scripts are included.
+4. Read the methodology and limitations before interpreting the weather-related findings.
 
+## 🔮 Future Improvements
 
-The notebook documents the Python weather-enrichment workflow. Input datasets must be supplied separately before running the workflow.
+- Incorporate additional match-level and team-level variables.
+- Evaluate the effect of venue, innings, team strength, and match format on observed outcomes.
+- Test whether weather-related variables improve the explanatory or predictive performance of statistical models.
+- Develop a reproducible automated data-refresh pipeline.
+- Explore predictive models for match outcomes using appropriate training and validation procedures.
 
+## 👨‍💻 Author
 
+**Manoj**  
+MSc Big Data Analytics | Aspiring Data Analyst & Sports Analytics Enthusiast
 
-\## ⚠️ Limitations
+Interested in applying data analytics, visualization, and statistical methods to real-world sports problems.
 
+---
 
-
-\- Dew likelihood is estimated from weather variables, not directly measured on the pitch.
-
-\- Weather observations are unavailable for 39 of the 726 enriched fixtures.
-
-\- Historical associations do not establish causation.
-
-\- Team composition, venue characteristics, player availability, and other match-level factors may influence outcomes.
-
-\- The historical dashboard and weather-enriched analysis cover different season ranges and should be interpreted within their respective scopes.
-
-
-
-\## 🚀 Future Improvements
-
-
-
-\- Incorporate additional team, player, and venue-level variables.
-
-\- Investigate the relationship between weather conditions and match outcomes using statistical models.
-
-\- Evaluate whether weather-related features improve predictive performance.
-
-\- Develop a reproducible automated data-refresh pipeline.
-
-\- Extend the analysis to additional cricket formats and competitions.
-
-
-
-\## 📚 Data Sources
-
-
-
-\- \[Cricsheet — Historical Cricket Data](https://cricsheet.org/)
-
-\- \[Open-Meteo — Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api)
-
-
-
-\## 👨‍💻 Author
-
-
-
-\*\*Manoj\*\*  
-
-MSc Big Data Analytics | Aspiring Data Analyst \& Sports Analytics Enthusiast
-
-
-
-Interested in applying data analytics, statistical methods, and visualization to real-world sports problems.
-
-
-
-\---
-
-
-
-\*\*Built with:\*\* Power BI · Python · Pandas · NumPy · DAX · Historical Weather Data
-
+**Tools:** Power BI · Python · DAX · Historical Weather Data · Sports Analytics
